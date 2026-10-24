@@ -1,6 +1,8 @@
 param(
     [Parameter(Mandatory = $true)]
-    [string]$Profile
+    [string]$Profile,
+    [Parameter(Mandatory = $true)]
+    [string]$Warehouse
 )
 
 $ErrorActionPreference = 'Stop'
@@ -19,7 +21,7 @@ GRANT USE SCHEMA, SELECT ON SCHEMA lakehouse_vertice.silver TO ``$clientId``;
     [System.IO.File]::WriteAllText($sqlFile.FullName, $sql, [System.Text.UTF8Encoding]::new($false))
 
     $runner = Join-Path $PSScriptRoot '..\..\scripts\run_sql.py'
-    python $runner $sqlFile.FullName --profile $Profile --warehouse YOUR_SQL_WAREHOUSE_ID --quiet
+    python $runner $sqlFile.FullName --profile $Profile --warehouse $Warehouse --quiet
     if ($LASTEXITCODE -ne 0) { throw 'Falha ao conceder acesso ao Unity Catalog' }
 } finally {
     Remove-Item -LiteralPath $sqlFile.FullName -ErrorAction SilentlyContinue

@@ -1,7 +1,7 @@
 [project]
 name = "vertice"
 version = "0.0.1"
-authors = [{ name = "project-vertice@users.noreply.github.com" }]
+authors = [{ name = "Projeto Vértice" }]
 requires-python = ">=3.12,<3.13"
 dependencies = [
     # Any dependencies for jobs and pipelines in this project can be added here

@@ -12,22 +12,26 @@ O repositório contém duas partes principais:
 
 ## Arquitetura
 
-```text
-Fontes externas
-    ├── API de feriados
-    └── Data Lake / Storage S3
-            │
-            ▼
-      Bronze → Silver → Gold
-            │
-            ├── Testes de qualidade
-            ├── Métricas governadas
-            ├── Status estruturado com IA
-            └── Dashboard / Genie
-                           │
-                           ▼
-                 Minha Torre (Databricks App)
+```mermaid
+flowchart LR
+    api[API de feriados] --> bronze[Bronze]
+    storage[Data Lake / Storage S3] --> bronze
+    bronze --> silver[Silver]
+    silver --> gold[Gold]
+    gold --> quality[Testes de qualidade]
+    gold --> metrics[Métricas governadas]
+    gold --> ai[Status estruturado com IA]
+    gold --> dashboard[Dashboard / Genie]
+    metrics --> app[Minha Torre<br/>Databricks App]
+    ai --> app
 ```
+
+## Demonstração
+
+O dashboard é servido pela aplicação **Minha Torre** no Databricks Apps. Para
+adicionar capturas de tela ao portfólio, salve imagens sanitizadas em
+`docs/images/` e referencie-as no README. Não inclua dados reais de clientes,
+IDs de workspace, URLs privadas ou informações pessoais nas imagens.
 
 ## Estrutura do repositório
 
@@ -90,10 +94,13 @@ uv sync --dev
 databricks auth login --host https://seu-workspace.cloud.databricks.com
 ```
 
-Valide o bundle antes do deploy:
+Valide o bundle antes do deploy. Os valores específicos do ambiente são
+fornecidos por linha de comando e não são armazenados no repositório:
 
 ```powershell
-databricks bundle validate -t dev
+databricks bundle validate -t dev `
+  --var="warehouse_id=seu_sql_warehouse_id" `
+  --var="deployment_user_email=seu-usuario@empresa.com"
 ```
 
 ### Aplicação Minha Torre
@@ -136,14 +143,22 @@ npm run build
 Na raiz do projeto:
 
 ```powershell
-databricks bundle deploy -t dev
+databricks bundle deploy -t dev `
+  --var="warehouse_id=seu_sql_warehouse_id" `
+  --var="deployment_user_email=seu-usuario@empresa.com"
 ```
 
 Para produção:
 
 ```powershell
-databricks bundle deploy -t prod
+databricks bundle deploy -t prod `
+  --var="warehouse_id=seu_sql_warehouse_id" `
+  --var="deployment_user_email=seu-usuario@empresa.com"
 ```
+
+O usuário informado em `deployment_user_email` deve existir no workspace e ter
+as permissões necessárias. Em produção, ele recebe `CAN_MANAGE` sobre o bundle;
+revise essa permissão conforme a política de acesso da organização.
 
 ### Minha Torre
 
@@ -153,6 +168,16 @@ Na pasta da aplicação:
 cd minha-torre
 npm run build
 databricks apps deploy
+```
+
+Ao usar o bundle da aplicação diretamente, forneça os identificadores do
+ambiente sem gravá-los no arquivo:
+
+```powershell
+databricks bundle deploy -t default `
+  --var="sql_warehouse_id=seu_sql_warehouse_id" `
+  --var="genie_space_id=seu_genie_space_id" `
+  --var="genie_space_name=seu_nome_de_genie_space"
 ```
 
 O comando de deploy valida a aplicação, publica a versão e informa a URL

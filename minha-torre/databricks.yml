@@ -32,10 +32,3 @@ resources:
 targets:
   default:
     default: true
-    workspace:
-      host: https://your-workspace.cloud.databricks.com
-
-    variables:
-      sql_warehouse_id: YOUR_SQL_WAREHOUSE_ID
-      genie_space_id: YOUR_GENIE_SPACE_ID
-      genie_space_name: "Farol · Diretoria"

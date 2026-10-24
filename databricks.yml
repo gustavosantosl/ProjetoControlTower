@@ -15,32 +15,30 @@ sync:
     - resources/*.lvdash.json
     - minha-torre/**
 
-# Shared variables for the dev bundle and future targets.
+# Values that identify a workspace or an account must be supplied at deploy
+# time. Keep them outside Git using --var or a local Databricks configuration.
 variables:
   catalog:
     description: The catalog to use
     default: lakehouse_vertice
   warehouse_id:
-    description: SQL warehouse for the bronze check
-    default: YOUR_SQL_WAREHOUSE_ID
+    description: SQL Warehouse ID for SQL tasks
+  deployment_user_email:
+    description: Workspace user email used for the production bundle path and permission
   s3_access_key_id:
-    description: chave do data lake (o valor fica fora do Git)
+    description: Storage access key supplied outside Git
   s3_secret_access_key:
-    description: chave do data lake (o valor fica fora do Git)
+    description: Storage secret key supplied outside Git
 
 targets:
   dev:
     default: true
     presets:
       trigger_pause_status: PAUSED
-    workspace:
-      host: https://your-workspace.cloud.databricks.com
   prod:
     mode: production
     workspace:
-      host: https://your-workspace.cloud.databricks.com
-      # We explicitly deploy to /Workspace/Users/project-vertice@users.noreply.github.com to make sure we only have a single copy.
-      root_path: /Workspace/Users/project-vertice@users.noreply.github.com/.bundle/${bundle.name}/${bundle.target}
+      root_path: /Workspace/Users/${var.deployment_user_email}/.bundle/${bundle.name}/${bundle.target}
     permissions:
-      - user_name: project-vertice@users.noreply.github.com
+      - user_name: ${var.deployment_user_email}
         level: CAN_MANAGE
