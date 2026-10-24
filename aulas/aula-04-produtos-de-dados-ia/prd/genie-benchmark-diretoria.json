@@ -1,0 +1,24 @@
+{
+  "questions": [
+    {"question": "Quantos projetos temos em andamento?", "required_patterns": ["mv_projetos", "projetos"]},
+    {"question": "Qual é o valor da carteira hoje?", "required_patterns": ["mv_projetos", "carteira"]},
+    {"question": "Qual é o SPI da carteira?", "required_patterns": ["mv_projetos", "spi"]},
+    {"question": "Qual é o CPI da carteira?", "required_patterns": ["mv_projetos", "cpi"]},
+    {"question": "Qual é o estouro previsto total?", "required_patterns": ["mv_projetos", "estouro_previsto"]},
+    {"question": "Quantos projetos estão em risco?", "required_patterns": ["mv_projetos", "projetos_em_risco"]},
+    {"question": "Quantos projetos são críticos?", "required_patterns": ["mv_projetos", "projetos_criticos"]},
+    {"question": "Quantos projetos melancia temos?", "required_patterns": ["mv_projetos", "projetos_melancia"]},
+    {"question": "Quais são os projetos mais atrasados?", "required_patterns": ["projeto_situacao_atual", "atraso_projetado_dias"]},
+    {"question": "Quais são os projetos com maior estouro previsto?", "required_patterns": ["projeto_situacao_atual", "estouro_previsto"]},
+    {"question": "Quais clientes têm projetos críticos?", "required_patterns": ["cliente", "crítico"], "forbidden_patterns": ["current_date\\("]},
+    {"question": "Por que o projeto PRJ-011 atrasou?", "required_patterns": ["status_estruturado", "PRJ-011", "causa_bloqueio"]},
+    {"question": "Quantos dias de impacto por falta de SRE houve no PRJ-011 nos últimos 90 dias?", "required_patterns": ["status_estruturado", "falta_sre", "dias_impacto"]},
+    {"question": "Quais SREs estão ociosos?", "required_patterns": ["utilizacao_pessoa_semana", "sre", "0\\.2|20%"]},
+    {"question": "Tenho gente parada enquanto outro projeto precisa de ajuda?", "required_patterns": ["utilizacao_pessoa_semana", "projeto_situacao_atual"]},
+    {"question": "Qual é o custo ocioso médio semanal das pessoas com menos de 20% de utilização?", "required_patterns": ["utilizacao_pessoa_semana", "custo_ocioso"]},
+    {"question": "Quais fornecedores ameaçam as próximas entregas?", "required_patterns": ["entregas_fornecedor", "atraso"]},
+    {"question": "Qual é o prazo real sobre o prometido da CodeForge?", "required_patterns": ["entregas_fornecedor", "prazo_real_dias", "prazo_prometido_dias"]},
+    {"question": "Quais projetos de e-commerce de varejo serão afetados pelo change freeze?", "required_patterns": ["projeto_situacao_atual", "01/11/2026|2026-11-01"]},
+    {"question": "O que vai dar errado no próximo mês, e o que eu faço agora?", "required_patterns": ["entregas_fornecedor", "change freeze|2026-11-01", "ação|recomend|antecip|cobrar"]}
+  ]
+}

@@ -1,0 +1,33 @@
+.app-shell { max-width: 1440px; margin: 0 auto; padding: 32px; color: var(--foreground); }
+.topo { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 40px; }
+.topo h1 { margin: 4px 0 0; font-size: 2.5rem; }
+.marca { margin: 0; color: var(--muted-foreground); font-size: .75rem; font-weight: 700; letter-spacing: .13em; }
+.topo nav { display: flex; gap: 8px; }
+.topo nav button { border: 1px solid var(--border); border-radius: 8px; background: var(--card); color: var(--foreground); padding: 10px 16px; cursor: pointer; }
+.topo nav button[aria-current="page"] { border-color: var(--primary); color: var(--primary); font-weight: 700; }
+h2 { font-size: 1.5rem; margin-bottom: 4px; }
+.metadado { color: var(--muted-foreground); font-size: .85rem; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
+.kpi-valor { font-size: 1.7rem; line-height: 1.2; }
+.kpis .metadado { margin: 6px 0 0; }
+.tabela-rolagem { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 1060px; text-align: left; }
+th, td { padding: 12px; border-bottom: 1px solid var(--border); vertical-align: top; white-space: nowrap; }
+th { color: var(--muted-foreground); font-size: .78rem; }
+td small { display: block; color: var(--muted-foreground); }
+.situacao { font-weight: 700; }
+.situacao-critico { color: var(--destructive); }
+.situacao-atencao { color: var(--warning); }
+.situacao-ok { color: var(--success); }
+.controles { display: grid; grid-template-columns: 1fr 1fr 180px; gap: 16px; }
+.controles label { display: grid; gap: 8px; font-weight: 600; }
+.controles select, .controles input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--background); color: var(--foreground); }
+.simulacao { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.erro { color: var(--destructive); }
+.vazio { padding: 24px; border: 1px dashed var(--border); border-radius: 8px; }
+details { padding: 16px; border: 1px solid var(--border); border-radius: 8px; }
+summary { cursor: pointer; font-weight: 600; }
+.genie-identidade { display: flex; align-items: center; gap: 12px; margin: 16px 0 8px; }
+.genie-chat { height: min(70vh, 700px); min-height: 440px; margin-top: 18px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+@media (max-width: 900px) { .topo { display: block; } .topo nav { margin-top: 20px; } .kpis, .simulacao { grid-template-columns: repeat(2, minmax(0, 1fr)); } .controles { grid-template-columns: 1fr; } }
+@media (max-width: 540px) { .app-shell { padding: 16px; } .kpis, .simulacao { grid-template-columns: 1fr; } }

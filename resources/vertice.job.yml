@@ -1,0 +1,80 @@
+# Seis tarefas: feriados e data lake carregam a bronze em paralelo;
+# conferencia_bronze valida as cargas; medalhao atualiza silver e gold;
+# testes_de_qualidade verifica os contratos e status_com_ia estrutura os textos em paralelo.
+resources:
+  jobs:
+    vertice_farol:
+      name: vertice_farol
+      tasks:
+        - task_key: ingestao_feriados
+          disabled: false
+          email_notifications: {}
+          notebook_task:
+            notebook_path: ../src/ingestao/ingestao_api1.ipynb
+            source: WORKSPACE
+          run_if: ALL_SUCCESS
+          timeout_seconds: 0
+          webhook_notifications: {}
+        - task_key: ingestao_data_lake
+          disabled: false
+          email_notifications: {}
+          notebook_task:
+            base_parameters:
+              ACCESS_KEY: ${var.s3_access_key_id}
+              S3_ENDPOINT: https://wvavdbmuhazfehxexbzp.storage.supabase.co/storage/v1/s3
+              S3_REGION: us-west-2
+              SECRET_KEY: ${var.s3_secret_access_key}
+            notebook_path: ../src/ingestao/ingestao 2.ipynb
+            source: WORKSPACE
+          run_if: ALL_SUCCESS
+          timeout_seconds: 0
+        - task_key: conferencia_bronze
+          depends_on:
+            - task_key: ingestao_feriados
+            - task_key: ingestao_data_lake
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/conferencia/00-conferencia-bronze.sql
+              source: WORKSPACE
+        - task_key: medalhao
+          depends_on:
+            - task_key: conferencia_bronze
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.vertice_medalhao.id}
+        - task_key: testes_de_qualidade
+          depends_on:
+            - task_key: medalhao
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/testes/testes.sql
+              source: WORKSPACE
+        - task_key: status_com_ia
+          depends_on:
+            - task_key: medalhao
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/ia/status_estruturado.sql
+              source: WORKSPACE
+        - task_key: metricas_governadas
+          depends_on:
+            - task_key: testes_de_qualidade
+            - task_key: status_com_ia
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/metricas/metricas.sql
+              source: WORKSPACE
+      email_notifications:
+        no_alert_for_skipped_runs: false
+      max_concurrent_runs: 1
+      performance_target: PERFORMANCE_OPTIMIZED
+      queue:
+        enabled: true
+      schedule:
+        quartz_cron_expression: 0 0 6 ? * MON
+        timezone_id: America/Sao_Paulo
+      timeout_seconds: 0
+      webhook_notifications: {}

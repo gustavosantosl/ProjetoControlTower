@@ -1,0 +1,161 @@
+{
+  "version": 2,
+  "config": {
+    "sample_questions": [
+      {
+        "id": "303d6d138a0c51fb921a1bb8b9a376bf",
+        "question": [
+          "O que vai dar errado no próximo mês, e o que eu faço agora?"
+        ]
+      },
+      {
+        "id": "ba3927dfeac55d069f8460ccf947ea3f",
+        "question": [
+          "Quais fornecedores ameaçam as próximas entregas?"
+        ]
+      },
+      {
+        "id": "d13a3fb1bc3c5c4f8d9818be16cc473e",
+        "question": [
+          "Tenho gente parada enquanto outro projeto precisa de ajuda?"
+        ]
+      },
+      {
+        "id": "d686dfc320ef58e1a4ff70c2a0225e9e",
+        "question": [
+          "Por que o projeto PRJ-011 atrasou e quem pode ajudar?"
+        ]
+      }
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      {
+        "identifier": "lakehouse_vertice.gold.fato_projeto_semana"
+      },
+      {
+        "identifier": "lakehouse_vertice.gold.projeto_situacao_atual",
+        "column_configs": [
+          {
+            "column_name": "cliente",
+            "synonyms": [
+              "conta",
+              "empresa"
+            ],
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "projeto",
+            "synonyms": [
+              "código do projeto"
+            ],
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "situacao",
+            "synonyms": [
+              "risco",
+              "estado"
+            ],
+            "enable_format_assistance": true
+          }
+        ]
+      },
+      {
+        "identifier": "lakehouse_vertice.gold.status_estruturado",
+        "column_configs": [
+          {
+            "column_name": "_classificado_em",
+            "exclude": true
+          },
+          {
+            "column_name": "causa_bloqueio",
+            "synonyms": [
+              "motivo do atraso",
+              "causa"
+            ],
+            "enable_format_assistance": true
+          }
+        ]
+      },
+      {
+        "identifier": "lakehouse_vertice.gold.utilizacao_pessoa_semana"
+      },
+      {
+        "identifier": "lakehouse_vertice.silver.entregas_fornecedor",
+        "column_configs": [
+          {
+            "column_name": "fornecedor",
+            "synonyms": [
+              "consultoria",
+              "parceiro"
+            ],
+            "enable_entity_matching": true
+          }
+        ]
+      }
+    ],
+    "metric_views": [
+      {
+        "identifier": "lakehouse_vertice.gold.mv_projetos"
+      }
+    ]
+  },
+  "instructions": {
+    "text_instructions": [
+      {
+        "id": "91804e9b5f245ca4ab94008f0d1a4d5f",
+        "content": [
+          "Público: dono da Vértice Tecnologia e diretoria. Responda em português, com evidência, projeto/cliente e ação concreta.",
+          "HOJE é 16/10/2026, a fotografia fixa do dataset. Últimos 90 dias = 18/07/2026 a 16/10/2026. Últimas 12 semanas = semana > 24/07/2026 e <= 16/10/2026. Próximo mês = 17/10/2026 a 16/11/2026. Nunca use current_date().",
+          "Para totais de hoje use gold.mv_projetos com MEASURE() e GROUP BY ALL. Para ranking e detalhes por projeto use gold.projeto_situacao_atual com status = 'em_andamento'. Cada cliente deve aparecer uma única vez em perguntas 'quais clientes', com DISTINCT ou GROUP BY cliente.",
+          "Para toda pergunta 'quantos projetos' ou 'qual total da carteira', inclusive em risco, críticos e melancias, escolha exclusivamente gold.mv_projetos e a medida governada projetos, projetos_em_risco, projetos_criticos ou projetos_melancia. Não recalcule esses totais com COUNT na tabela projeto_situacao_atual.",
+          "SPI da carteira = SUM(EV)/SUM(PV), CPI = SUM(EV)/SUM(AC). Margem projetada = (SUM(valor_contrato)-SUM(EAC))/SUM(valor_contrato). Projeto em risco: situacao atenção ou crítico. Crítico: SPI < 0,8 ou CPI < 0,8. Atenção: SPI < 0,9 ou CPI < 0,9. Melancia: farol_do_gerente verde e SPI < 0,9. Exponha ambos os faróis quando diferirem.",
+          "gold.fato_projeto_semana contém PV, EV e AC ACUMULADOS em cada semana. Para valor de um projeto no período escolha a semana mais recente até o corte. Nunca some valores acumulados de semanas distintas.",
+          "Para 'por que o projeto X atrasou', consulte gold.status_estruturado em 18/07/2026 a 16/10/2026. Exclua sem_bloqueio e nao_reportado, conte ocorrências e some dias_impacto por causa. Junte SPI e atraso projetado da fotografia. Se a causa for falta_sre, identifique SREs com utilização < 20% nas últimas 12 semanas. Não afirme causalidade além do status registrado.",
+          "Gente parada: em gold.utilizacao_pessoa_semana, agregue as últimas 12 semanas por colaborador e calcule SUM(horas_apontadas)/SUM(horas_disponiveis) < 0,20. Horas e custo ocioso médios por semana dividem pelo número de semanas observadas. Não confunda média semanal com total do período.",
+          "Fornecedor: silver.entregas_fornecedor traz o nome normalizado. Prazo real sobre prometido = SUM(prazo_real_dias)/SUM(prazo_prometido_dias) apenas para entregas concluídas. em_atraso marca entregas abertas vencidas na fotografia de 16/10/2026.",
+          "Para 'o que vai dar errado no próximo mês', junte entregas de consultoria em atraso e projetos de e-commerce de varejo afetados pelo change freeze de 01/11/2026 a 10/01/2027. Relacione risco, evidência e ação recomendada. Não trate risco como certeza."
+        ]
+      }
+    ],
+    "example_question_sqls": [
+      {
+        "id": "30178dd270b7530fb672f5e071248b6f",
+        "question": [
+          "Por que o projeto PRJ-011 atrasou e quem pode ajudar?"
+        ],
+        "sql": [
+          "WITH causas AS (\n  SELECT s.projeto_id, s.causa_bloqueio, COUNT(*) AS semanas,\n         SUM(COALESCE(s.dias_impacto, 0)) AS dias_impacto\n  FROM lakehouse_vertice.gold.status_estruturado AS s\n  WHERE s.projeto_id = 'PRJ-011'\n    AND s.data_status BETWEEN DATE'2026-07-18' AND DATE'2026-10-16'\n    AND s.causa_bloqueio NOT IN ('sem_bloqueio', 'nao_reportado')\n  GROUP BY s.projeto_id, s.causa_bloqueio\n), sres AS (\n  SELECT u.colaborador_id, MAX(u.nome) AS nome,\n         TRY_DIVIDE(SUM(u.horas_apontadas), SUM(u.horas_disponiveis)) AS utilizacao\n  FROM lakehouse_vertice.gold.utilizacao_pessoa_semana AS u\n  WHERE u.semana > DATE'2026-07-24' AND u.semana <= DATE'2026-10-16'\n    AND LOWER(u.papel) LIKE '%sre%'\n  GROUP BY u.colaborador_id\n  HAVING TRY_DIVIDE(SUM(u.horas_apontadas), SUM(u.horas_disponiveis)) < 0.2\n)\nSELECT p.projeto, p.nome, p.spi, p.cpi, p.atraso_projetado_dias,\n       c.causa_bloqueio, c.semanas, c.dias_impacto,\n       CASE WHEN c.causa_bloqueio = 'falta_sre'\n         THEN (SELECT CONCAT_WS(', ', SORT_ARRAY(COLLECT_SET(CONCAT(s.colaborador_id, ' ', s.nome)))) FROM sres AS s)\n       END AS sres_ociosos\nFROM lakehouse_vertice.gold.projeto_situacao_atual AS p\nJOIN causas AS c ON c.projeto_id = p.projeto\nWHERE p.projeto = 'PRJ-011' AND p.status = 'em_andamento'\nORDER BY c.semanas DESC, c.dias_impacto DESC"
+        ]
+      },
+      {
+        "id": "64e55440f98f56d99fdb4f3530d64673",
+        "question": [
+          "Tenho gente parada enquanto outro projeto precisa de ajuda?"
+        ],
+        "sql": [
+          "WITH pessoas AS (\n  SELECT u.colaborador_id, MAX(u.nome) AS nome, MAX(u.papel) AS papel,\n         TRY_DIVIDE(SUM(u.horas_apontadas), SUM(u.horas_disponiveis)) AS utilizacao,\n         TRY_DIVIDE(SUM(u.horas_ociosas), COUNT(DISTINCT u.semana)) AS horas_ociosas_media_semana,\n         TRY_DIVIDE(SUM(u.custo_ocioso), COUNT(DISTINCT u.semana)) AS custo_ocioso_medio_semana\n  FROM lakehouse_vertice.gold.utilizacao_pessoa_semana AS u\n  WHERE u.semana > DATE'2026-07-24' AND u.semana <= DATE'2026-10-16'\n  GROUP BY u.colaborador_id\n  HAVING TRY_DIVIDE(SUM(u.horas_apontadas), SUM(u.horas_disponiveis)) < 0.2\n)\nSELECT p.colaborador_id, p.nome, p.papel, p.utilizacao,\n       p.horas_ociosas_media_semana, p.custo_ocioso_medio_semana,\n       d.projeto, d.nome AS projeto_destino, d.situacao, d.spi\nFROM pessoas AS p\nCROSS JOIN lakehouse_vertice.gold.projeto_situacao_atual AS d\nWHERE d.status = 'em_andamento' AND d.situacao IN ('atenção', 'crítico')\nORDER BY CASE WHEN LOWER(p.papel) LIKE '%sre%' THEN d.atraso_projetado_dias END DESC,\n         p.custo_ocioso_medio_semana DESC, d.spi ASC\nLIMIT 20"
+        ]
+      },
+      {
+        "id": "8313952487bc56b8a0bbc6b167990a27",
+        "question": [
+          "O que vai dar errado no próximo mês, e o que eu faço agora?"
+        ],
+        "sql": [
+          "WITH entregas AS (\n  SELECT 'consultoria em atraso' AS risco, e.fornecedor AS entidade,\n         CONCAT('Entrega prometida em ', CAST(e.data_prometida AS STRING),\n                ', ', CAST(e.dias_de_atraso_na_entrega AS STRING), ' dias em atraso') AS evidencia,\n         'Cobrar plano e nova data do fornecedor' AS acao\n  FROM lakehouse_vertice.silver.entregas_fornecedor AS e\n  WHERE e.em_atraso AND e.data_prometida <= DATE'2026-11-15'\n), freeze AS (\n  SELECT 'change freeze de varejo' AS risco, p.projeto AS entidade,\n         CONCAT(p.cliente, ': e-commerce, SPI ', CAST(ROUND(p.spi, 2) AS STRING),\n                ', término projetado ', CAST(p.termino_projetado AS STRING)) AS evidencia,\n         'Antecipar homologação e deploy antes de 01/11/2026' AS acao\n  FROM lakehouse_vertice.gold.projeto_situacao_atual AS p\n  WHERE p.status = 'em_andamento'\n    AND LOWER(p.segmento) LIKE '%varejo%'\n    AND LOWER(p.tipo_projeto) LIKE '%commerce%'\n    AND p.termino_projetado >= DATE'2026-11-01'\n    AND p.termino_projetado <= DATE'2027-01-10'\n)\nSELECT * FROM entregas UNION ALL SELECT * FROM freeze\nORDER BY risco, entidade"
+        ]
+      },
+      {
+        "id": "fce5e7970e7a5a509d130d6709527c8c",
+        "question": [
+          "Quais fornecedores ameaçam as próximas entregas?"
+        ],
+        "sql": [
+          "SELECT e.fornecedor,\n       COUNT(*) AS entregas,\n       TRY_DIVIDE(SUM(CASE WHEN e.data_entrega IS NOT NULL THEN e.prazo_real_dias END),\n                  SUM(CASE WHEN e.data_entrega IS NOT NULL THEN e.prazo_prometido_dias END)) AS prazo_real_sobre_prometido,\n       COUNT_IF(e.em_atraso) AS entregas_em_atraso,\n       MAX(e.dias_de_atraso_na_entrega) AS maior_atraso_dias\nFROM lakehouse_vertice.silver.entregas_fornecedor AS e\nGROUP BY e.fornecedor\nORDER BY entregas_em_atraso DESC, prazo_real_sobre_prometido DESC"
+        ]
+      }
+    ]
+  }
+}

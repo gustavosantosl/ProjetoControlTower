@@ -1,0 +1,42 @@
+.databricks/
+build/
+dist/
+__pycache__/
+*.egg-info
+.venv/
+databricks.exe
+scratch/**
+!scratch/README.md
+**/explorations/**
+**/!explorations/README.md
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.secrets
+*.secret
+
+# JavaScript dependencies and generated output
+**/node_modules/
+**/client/dist/
+**/dist/
+**/coverage/
+*.tsbuildinfo
+
+# Local IDE and operating-system files
+.idea/
+.vscode/settings.json
+.vscode/*.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+.DS_Store
+Thumbs.db
